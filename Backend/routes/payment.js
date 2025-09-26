@@ -25,22 +25,22 @@ const authenticateToken = (req, res, next) => {
 // Create payment order
 router.post("/create-order", authenticateToken, async (req, res) => {
   try {
-    if (!razorpay) {
-      return res.status(503).json({ 
-        message: "Payment service not available - Razorpay credentials not configured" 
-      });
-    }
-
     const { amount, currency = "INR" } = req.body;
     
-    const options = {
-      amount: amount * 100, // Razorpay expects amount in paise
+    // For trial purposes, create a mock order without Razorpay credentials
+    const mockOrder = {
+      id: `order_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      amount: amount * 100, // Amount in paise
       currency,
+      status: "created",
       receipt: `receipt_${Date.now()}`,
+      created_at: Date.now()
     };
 
-    const order = await razorpay.orders.create(options);
-    res.json({ order });
+    res.json({ 
+      order: mockOrder,
+      message: "Mock order created for trial purposes"
+    });
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }
@@ -49,17 +49,15 @@ router.post("/create-order", authenticateToken, async (req, res) => {
 // Verify payment
 router.post("/verify", authenticateToken, async (req, res) => {
   try {
-    if (!razorpay) {
-      return res.status(503).json({ 
-        message: "Payment service not available - Razorpay credentials not configured" 
-      });
-    }
-
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
     
-    // In a real application, you would verify the signature here
-    // For now, we'll just return success
-    res.json({ message: "Payment verified successfully" });
+    // For trial purposes, always return success
+    // In production, you would verify the signature here
+    res.json({ 
+      message: "Payment verified successfully (Trial Mode)",
+      payment_id: razorpay_payment_id,
+      order_id: razorpay_order_id
+    });
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }
